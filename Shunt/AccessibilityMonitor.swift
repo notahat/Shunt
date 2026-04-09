@@ -1,6 +1,7 @@
 import ApplicationServices
 import Foundation
 
+/// Notification names posted when accessibility permission status changes.
 extension Notification.Name {
     static let accessibilityGranted = Notification.Name("ShuntAccessibilityGranted")
     static let accessibilityRevoked = Notification.Name("ShuntAccessibilityRevoked")
@@ -14,14 +15,25 @@ final class AccessibilityMonitor {
     private var timer: Timer?
     private(set) var isTrusted: Bool = false
 
+    /// Checks the current permission state, prompts if needed, and begins polling.
     func start() {
         isTrusted = AXIsProcessTrusted()
-
         if !isTrusted {
-            let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
-            AXIsProcessTrustedWithOptions(options)
+            promptForPermission()
         }
+        startPolling()
+    }
 
+    // MARK: - Private
+
+    /// Shows the system accessibility permission prompt.
+    private func promptForPermission() {
+        let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
+        AXIsProcessTrustedWithOptions(options)
+    }
+
+    /// Polls AXIsProcessTrusted() every second and posts a notification if the status changes.
+    private func startPolling() {
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
                 guard let self else { return }

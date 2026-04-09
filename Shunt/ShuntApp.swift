@@ -2,6 +2,7 @@ import ApplicationServices
 import ServiceManagement
 import SwiftUI
 
+/// App entry point. Owns the menu bar icon and delegates app lifecycle to AppDelegate.
 @main
 struct ShuntApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
@@ -10,9 +11,10 @@ struct ShuntApp: App {
 
     var body: some Scene {
         MenuBarExtra("Shunt", systemImage: "dock.arrow.down.rectangle") {
+            // Only shown when accessibility permission hasn't been granted.
             if !accessibilityGranted {
                 Button("Enable Accessibility Access…") {
-                    NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
+                    openAccessibilitySettings()
                 }
                 Divider()
             }
@@ -30,6 +32,8 @@ struct ShuntApp: App {
                     }
                 }
             Divider()
+            // onReceive is attached here because the Quit button is always present,
+            // giving the notifications a stable view to land on.
             Button("Quit Shunt") {
                 NSApplication.shared.terminate(nil)
             }
@@ -41,8 +45,14 @@ struct ShuntApp: App {
             }
         }
     }
+
+    /// Opens System Settings to the Accessibility privacy page.
+    private func openAccessibilitySettings() {
+        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
+    }
 }
 
+/// Starts the accessibility monitor and event tap on launch.
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     let accessibilityMonitor = AccessibilityMonitor()

@@ -11,6 +11,8 @@ final class EventTapManager {
     private var runLoopSource: CFRunLoopSource?
     private var observers: [Any] = []
 
+    /// Registers for accessibility notifications and sets up the event tap
+    /// immediately if accessibility access is already granted.
     func start(accessibilityGranted: Bool) {
         observers.append(NotificationCenter.default.addObserver(
             forName: .accessibilityGranted, object: nil, queue: .main
@@ -29,6 +31,9 @@ final class EventTapManager {
         }
     }
 
+    // MARK: - Private
+
+    /// Installs the CGEvent tap on the main run loop.
     private func setupEventTap() {
         guard eventTap == nil else { return }
 
@@ -39,28 +44,14 @@ final class EventTapManager {
             options: .defaultTap,
             eventsOfInterest: eventMask,
             callback: { _, type, event, _ in
-                guard type == .keyDown else {
+                guard type == .keyDown,
+                      let direction = EventTapManager.cycleDirection(for: event)
+                else {
                     return Unmanaged.passUnretained(event)
                 }
-
-                let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
-                let flags = event.flags
-
-                let isTab = keyCode == 48
-                    && flags.contains(.maskCommand)
-                    && !flags.contains(.maskAlternate)
-                    && !flags.contains(.maskControl)
-
-                guard isTab else {
-                    return Unmanaged.passUnretained(event)
-                }
-
-                let direction: DockActivator.Direction = flags.contains(.maskShift) ? .backward : .forward
-
                 MainActor.assumeIsolated {
                     DockActivator.activate(direction: direction)
                 }
-
                 return nil
             },
             userInfo: nil
@@ -77,6 +68,7 @@ final class EventTapManager {
         CGEvent.tapEnable(tap: tap, enable: true)
     }
 
+    /// Disables and removes the CGEvent tap from the run loop.
     private func tearDownEventTap() {
         if let tap = eventTap {
             CGEvent.tapEnable(tap: tap, enable: false)
@@ -86,5 +78,18 @@ final class EventTapManager {
         }
         eventTap = nil
         runLoopSource = nil
+    }
+
+    /// Returns the Dock cycling direction if the event is Cmd+Tab or Cmd+Shift+Tab,
+    /// or nil if the event should be passed through unchanged.
+    private static func cycleDirection(for event: CGEvent) -> DockActivator.Direction? {
+        let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
+        let flags = event.flags
+        guard keyCode == 48,
+              flags.contains(.maskCommand),
+              !flags.contains(.maskAlternate),
+              !flags.contains(.maskControl)
+        else { return nil }
+        return flags.contains(.maskShift) ? .backward : .forward
     }
 }
