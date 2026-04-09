@@ -5,7 +5,7 @@ struct ShuntApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
-        MenuBarExtra("Shunt", systemImage: "arrow.2.squarepath") {
+        MenuBarExtra("Shunt", systemImage: "dock.arrow.down.rectangle") {
             Button("Quit Shunt") {
                 NSApplication.shared.terminate(nil)
             }
