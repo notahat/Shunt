@@ -97,7 +97,7 @@ enum DockActivator {
 
     /// Returns true if the element is a Dock separator. Separators have no title.
     private static func isSeparator(_ element: AXUIElement) -> Bool {
-        return (title(of: element) ?? "").isEmpty
+        (title(of: element) ?? "").isEmpty
     }
 
     /// Returns the AX children of an element, or nil if unavailable.
