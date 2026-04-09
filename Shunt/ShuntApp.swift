@@ -1,3 +1,4 @@
+import ApplicationServices
 import ServiceManagement
 import SwiftUI
 
@@ -5,9 +6,16 @@ import SwiftUI
 struct ShuntApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var accessibilityGranted = AXIsProcessTrusted()
 
     var body: some Scene {
         MenuBarExtra("Shunt", systemImage: "dock.arrow.down.rectangle") {
+            if !accessibilityGranted {
+                Button("Enable Accessibility Access…") {
+                    NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
+                }
+                Divider()
+            }
             Toggle("Launch at Login", isOn: $launchAtLogin)
                 .onChange(of: launchAtLogin) { _, enabled in
                     do {
@@ -25,15 +33,23 @@ struct ShuntApp: App {
             Button("Quit Shunt") {
                 NSApplication.shared.terminate(nil)
             }
+            .onReceive(NotificationCenter.default.publisher(for: .accessibilityGranted)) { _ in
+                accessibilityGranted = true
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .accessibilityRevoked)) { _ in
+                accessibilityGranted = false
+            }
         }
     }
 }
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
+    let accessibilityMonitor = AccessibilityMonitor()
     let eventTapManager = EventTapManager()
 
     func applicationDidFinishLaunching(_: Notification) {
-        eventTapManager.start()
+        accessibilityMonitor.start()
+        eventTapManager.start(accessibilityGranted: accessibilityMonitor.isTrusted)
     }
 }
