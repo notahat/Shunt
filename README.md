@@ -19,5 +19,4 @@ Shunt installs a system-wide CGEvent tap that intercepts Cmd+Tab before it reach
 
 ## To-dos
 
-- [ ] Cmd+Shift+Tab support — intercept reverse cycling and move focus to the last Dock item
 - [ ] Tap health monitoring — detect when the system disables the event tap (`tapDisabledByTimeout` / `tapDisabledByUserInput`) and re-enable it automatically

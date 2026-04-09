@@ -6,9 +6,9 @@ extension Notification.Name {
     static let accessibilityRevoked = Notification.Name("ShuntAccessibilityRevoked")
 }
 
-// Continuously monitors accessibility permission status and posts notifications
-// when it changes. Shows the system permission prompt on first launch if access
-// hasn't been granted.
+/// Continuously monitors accessibility permission status and posts notifications
+/// when it changes. Shows the system permission prompt on first launch if access
+/// hasn't been granted.
 @MainActor
 final class AccessibilityMonitor {
     private var timer: Timer?

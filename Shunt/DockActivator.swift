@@ -1,18 +1,20 @@
 import AppKit
 import ApplicationServices
 
-// Activates keyboard navigation in the Dock via the accessibility API. On first
-// call, focuses the Dock's AXList to begin keyboard navigation — the Dock selects
-// the current app's icon. On subsequent calls while an item is already selected,
-// advances to the next item, skipping separators.
+/// Activates keyboard navigation in the Dock via the accessibility API. On first
+/// call, focuses the Dock's AXList to begin keyboard navigation — the Dock selects
+/// the current app's icon. On subsequent calls while an item is already selected,
+/// advances or retreats through items, skipping separators.
 @MainActor
 enum DockActivator {
-    static func activate() {
+    enum Direction { case forward, backward }
+
+    static func activate(direction: Direction = .forward) {
         guard let list = findDockList() else { return }
 
         if let current = selectedChild(of: list),
            let children = children(of: list),
-           let next = nextSelectableItem(after: current, in: children)
+           let next = nextSelectableItem(after: current, in: children, direction: direction)
         {
             select(next, in: list)
         } else {
@@ -22,7 +24,7 @@ enum DockActivator {
 
     // MARK: - Private
 
-    // Navigates the Dock's AX tree to find the AXList element that contains the app icons.
+    /// Navigates the Dock's AX tree to find the AXList element that contains the app icons.
     private static func findDockList() -> AXUIElement? {
         guard let dock = NSRunningApplication.runningApplications(
             withBundleIdentifier: "com.apple.dock"
@@ -42,24 +44,26 @@ enum DockActivator {
         return list
     }
 
-    // Returns the currently selected item in the Dock list, if any.
+    /// Returns the currently selected item in the Dock list, if any.
     private static func selectedChild(of list: AXUIElement) -> AXUIElement? {
         var ref: CFTypeRef?
         AXUIElementCopyAttributeValue(list, kAXSelectedChildrenAttribute as CFString, &ref)
         return (ref as? [AXUIElement])?.first
     }
 
-    // Returns the next item after the current one, skipping separators.
-    private static func nextSelectableItem(after current: AXUIElement, in children: [AXUIElement]) -> AXUIElement? {
+    /// Returns the next item after the current one in the given direction, skipping separators.
+    private static func nextSelectableItem(after current: AXUIElement, in children: [AXUIElement], direction: Direction) -> AXUIElement? {
         guard let currentIndex = children.firstIndex(where: { CFEqual($0, current) }) else { return nil }
-        var nextIndex = (currentIndex + 1) % children.count
+        let count = children.count
+        let step = direction == .forward ? 1 : count - 1
+        var nextIndex = (currentIndex + step) % count
         while isSeparator(children[nextIndex]), nextIndex != currentIndex {
-            nextIndex = (nextIndex + 1) % children.count
+            nextIndex = (nextIndex + step) % count
         }
         return children[nextIndex]
     }
 
-    // Sets the selected item in the Dock list, moving the visual highlight.
+    /// Sets the selected item in the Dock list, moving the visual highlight.
     private static func select(_ item: AXUIElement, in list: AXUIElement) {
         let result = AXUIElementSetAttributeValue(list, kAXSelectedChildrenAttribute as CFString, [item] as CFArray)
         if result != .success {
@@ -67,8 +71,8 @@ enum DockActivator {
         }
     }
 
-    // Focuses the Dock list to start keyboard navigation. The Dock will select
-    // the current app's icon and display the keyboard focus indicator.
+    /// Focuses the Dock list to start keyboard navigation. The Dock will select
+    /// the current app's icon and display the keyboard focus indicator.
     private static func beginKeyboardNavigation(in list: AXUIElement) {
         let result = AXUIElementSetAttributeValue(list, kAXFocusedAttribute as CFString, kCFBooleanTrue)
         if result != .success {
@@ -76,21 +80,21 @@ enum DockActivator {
         }
     }
 
-    // Returns true if the element is a Dock separator. Separators have no title.
+    /// Returns true if the element is a Dock separator. Separators have no title.
     private static func isSeparator(_ element: AXUIElement) -> Bool {
         var ref: CFTypeRef?
         AXUIElementCopyAttributeValue(element, kAXTitleAttribute as CFString, &ref)
         return (ref as? String ?? "").isEmpty
     }
 
-    // Returns the AX children of an element, or nil if unavailable.
+    /// Returns the AX children of an element, or nil if unavailable.
     private static func children(of element: AXUIElement) -> [AXUIElement]? {
         var ref: CFTypeRef?
         guard AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &ref) == .success else { return nil }
         return ref as? [AXUIElement]
     }
 
-    // Returns the AX role of an element, or nil if unavailable.
+    /// Returns the AX role of an element, or nil if unavailable.
     private static func role(of element: AXUIElement) -> String? {
         var ref: CFTypeRef?
         AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &ref)

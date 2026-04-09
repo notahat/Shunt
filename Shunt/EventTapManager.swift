@@ -1,9 +1,10 @@
 import ApplicationServices
 import CoreGraphics
 
-// Sets up a CGEvent tap to intercept Cmd+Tab system-wide. When detected, the event
-// is swallowed and DockActivator is called instead. Enables and disables the tap
-// in response to accessibility permission changes via AccessibilityMonitor.
+/// Sets up a CGEvent tap to intercept Cmd+Tab and Cmd+Shift+Tab system-wide. When
+/// detected, the event is swallowed and DockActivator is called instead. Enables
+/// and disables the tap in response to accessibility permission changes via
+/// AccessibilityMonitor.
 @MainActor
 final class EventTapManager {
     private var eventTap: CFMachPort?
@@ -45,18 +46,19 @@ final class EventTapManager {
                 let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
                 let flags = event.flags
 
-                let isCmdTab = keyCode == 48
+                let isTab = keyCode == 48
                     && flags.contains(.maskCommand)
                     && !flags.contains(.maskAlternate)
                     && !flags.contains(.maskControl)
-                    && !flags.contains(.maskShift)
 
-                guard isCmdTab else {
+                guard isTab else {
                     return Unmanaged.passUnretained(event)
                 }
 
+                let direction: DockActivator.Direction = flags.contains(.maskShift) ? .backward : .forward
+
                 MainActor.assumeIsolated {
-                    DockActivator.activate()
+                    DockActivator.activate(direction: direction)
                 }
 
                 return nil
