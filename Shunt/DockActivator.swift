@@ -15,7 +15,8 @@ enum DockActivator {
 
         var childrenRef: CFTypeRef?
         guard AXUIElementCopyAttributeValue(dockElement, kAXChildrenAttribute as CFString, &childrenRef) == .success,
-              let children = childrenRef as? [AXUIElement] else {
+              let children = childrenRef as? [AXUIElement]
+        else {
             print("Could not get Dock children.")
             return
         }

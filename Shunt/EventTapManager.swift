@@ -1,5 +1,5 @@
-import CoreGraphics
 import ApplicationServices
+import CoreGraphics
 
 @MainActor
 final class EventTapManager {

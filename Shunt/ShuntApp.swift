@@ -17,7 +17,7 @@ struct ShuntApp: App {
 class AppDelegate: NSObject, NSApplicationDelegate {
     let eventTapManager = EventTapManager()
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
+    func applicationDidFinishLaunching(_: Notification) {
         eventTapManager.start()
     }
 }
