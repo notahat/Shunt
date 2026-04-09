@@ -5,16 +5,29 @@ import ApplicationServices
 final class EventTapManager {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
+    private var permissionTimer: Timer?
 
     func start() {
-        // "AXTrustedCheckOptionPrompt" avoids a Swift 6 concurrency error from
-        // kAXTrustedCheckOptionPrompt, which is declared as a mutable global.
-        let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
-        guard AXIsProcessTrustedWithOptions(options) else {
-            print("Accessibility permission not granted; will not intercept events.")
-            return
+        if AXIsProcessTrusted() {
+            setupEventTap()
+        } else {
+            // Show the system prompt, then poll until the user grants access.
+            let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
+            AXIsProcessTrustedWithOptions(options)
+            permissionTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    if AXIsProcessTrusted() {
+                        self.permissionTimer?.invalidate()
+                        self.permissionTimer = nil
+                        self.setupEventTap()
+                    }
+                }
+            }
         }
+    }
 
+    private func setupEventTap() {
         let eventMask = CGEventMask(1 << CGEventType.keyDown.rawValue)
         let tap = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
