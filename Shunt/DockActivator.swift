@@ -1,6 +1,9 @@
 import AppKit
 import ApplicationServices
 
+// Activates keyboard navigation in the Dock via the accessibility API, equivalent
+// to pressing Fn+A / "Move focus to the Dock". Finds the Dock's AXList element
+// and sets focus on it.
 @MainActor
 enum DockActivator {
     static func activate() {

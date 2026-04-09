@@ -1,6 +1,10 @@
 import ApplicationServices
 import CoreGraphics
 
+// Sets up a CGEvent tap to intercept Cmd+Tab system-wide. When detected, the event
+// is swallowed and DockActivator is called instead. Also handles the accessibility
+// permission flow: shows the system prompt if needed, then polls until access is
+// granted before installing the tap.
 @MainActor
 final class EventTapManager {
     private var eventTap: CFMachPort?
