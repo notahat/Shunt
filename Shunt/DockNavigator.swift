@@ -1,15 +1,15 @@
 import AppKit
 import ApplicationServices
 
-/// Activates keyboard navigation in the Dock via the accessibility API. On first
-/// call, selects the Dock item adjacent to the frontmost application in the given
-/// direction. On subsequent calls while an item is already selected, advances or
-/// retreats through items, skipping separators.
+/// Navigates the Dock via the accessibility API. On first call, enters keyboard
+/// navigation mode and selects the Dock item adjacent to the frontmost application
+/// in the given direction. On subsequent calls while an item is already selected,
+/// advances or retreats through items, skipping separators.
 @MainActor
-enum DockActivator {
+enum DockNavigator {
     enum Direction { case forward, backward }
 
-    static func activate(direction: Direction = .forward) {
+    static func navigate(direction: Direction = .forward) {
         guard let list = findDockList(),
               let listChildren = children(of: list)
         else { return }

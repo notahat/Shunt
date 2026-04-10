@@ -32,8 +32,8 @@ struct ShuntApp: App {
                     }
                 }
             Divider()
-            // onReceive is attached here because the Quit button is always present,
-            // giving the notifications a stable view to land on.
+            // onReceive must be attached to a view that's always in the menu,
+            // regardless of whether the accessibility warning is showing.
             Button("Quit Shunt") {
                 NSApplication.shared.terminate(nil)
             }

@@ -1,6 +1,6 @@
 # Shunt
 
-A macOS background utility that intercepts Cmd+Tab and activates keyboard navigation in the Dock (equivalent to pressing Fn+A / "Move focus to the Dock"). No Dock icon or window — only a menu bar icon with a Quit option.
+A macOS background utility that intercepts Cmd+Tab and Cmd+Shift+Tab and activates keyboard navigation in the Dock (equivalent to pressing Control+F3 / "Move focus to the Dock"). No Dock icon or window — menu bar icon with Launch at Login toggle and Quit.
 
 ## Building
 
@@ -26,7 +26,7 @@ Use SwiftFormat: `swiftformat Shunt/`
 
 **Permission polling:** If accessibility access isn't granted at launch, the app shows the system prompt and then polls `AXIsProcessTrusted()` every second. Once granted, the event tap starts automatically without requiring a restart.
 
-**Dock activation uses AXUIElement only** (no Control+F3 fallback). The approach: find the Dock process by bundle ID `com.apple.dock`, get its AXUIElement, find the child with role `kAXListRole`, and set `kAXFocusedAttribute` on it. The fallback was removed to evaluate AXUIElement stability — add it back if needed.
+**`DockNavigator` uses AXUIElement only** (no Control+F3 fallback). The approach: find the Dock process by bundle ID `com.apple.dock`, get its AXUIElement, find the child with role `kAXListRole`, and set `kAXFocusedAttribute` on it. The fallback was removed to evaluate AXUIElement stability — add it back if needed.
 
 ## Known non-issues
 

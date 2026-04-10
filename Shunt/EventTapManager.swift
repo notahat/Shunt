@@ -50,7 +50,7 @@ final class EventTapManager {
                     return Unmanaged.passUnretained(event)
                 }
                 MainActor.assumeIsolated {
-                    DockActivator.activate(direction: direction)
+                    DockNavigator.navigate(direction: direction)
                 }
                 return nil
             },
@@ -82,7 +82,7 @@ final class EventTapManager {
 
     /// Returns the Dock cycling direction if the event is Cmd+Tab or Cmd+Shift+Tab,
     /// or nil if the event should be passed through unchanged.
-    private static func cycleDirection(for event: CGEvent) -> DockActivator.Direction? {
+    private static func cycleDirection(for event: CGEvent) -> DockNavigator.Direction? {
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
         let flags = event.flags
         guard keyCode == 48,

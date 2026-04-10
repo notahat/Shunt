@@ -33,6 +33,7 @@ final class AccessibilityMonitor {
     }
 
     /// Polls AXIsProcessTrusted() every second and posts a notification if the status changes.
+    /// Runs continuously (not just until permission is granted) so revocation is also detected.
     private func startPolling() {
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
