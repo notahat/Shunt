@@ -8,7 +8,7 @@ import CoreGraphics
 final class CmdTabInterceptor {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
-    private var observers: [Any] = []
+    private var observers: [NSObjectProtocol] = []
 
     /// Held in a static so the non-capturing callback closure can re-enable the tap.
     private nonisolated(unsafe) static var tapForCallback: CFMachPort?
@@ -74,6 +74,7 @@ final class CmdTabInterceptor {
         }
     }
 
+    /// CGEvent tap callback. Intercepts Cmd+Tab/Cmd+Shift+Tab and re-enables the tap if disabled.
     private static func handleEvent(_ type: CGEventType, _ event: CGEvent) -> Unmanaged<CGEvent>? {
         switch type {
         case .keyDown:

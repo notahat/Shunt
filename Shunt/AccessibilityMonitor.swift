@@ -29,7 +29,7 @@ final class AccessibilityMonitor {
     /// Shows the system accessibility permission prompt.
     private func promptForPermission() {
         let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
-        AXIsProcessTrustedWithOptions(options)
+        _ = AXIsProcessTrustedWithOptions(options)
     }
 
     /// Polls AXIsProcessTrusted() every second and posts a notification if the status changes.

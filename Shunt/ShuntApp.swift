@@ -58,6 +58,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let accessibilityMonitor = AccessibilityMonitor()
     let cmdTabInterceptor = CmdTabInterceptor()
 
+    /// Starts the accessibility monitor and event tap on launch.
     func applicationDidFinishLaunching(_: Notification) {
         accessibilityMonitor.start()
         cmdTabInterceptor.start(accessibilityGranted: accessibilityMonitor.isTrusted)

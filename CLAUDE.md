@@ -28,6 +28,15 @@ Use SwiftFormat: `swiftformat Shunt/`
 
 **`DockNavigator` uses AXUIElement only** (no Control+F3 fallback). The approach: find the Dock process by bundle ID `com.apple.dock`, get its AXUIElement, find the child with role `kAXListRole`, and set `kAXFocusedAttribute` on it. The fallback was removed to evaluate AXUIElement stability — add it back if needed.
 
+## Code style
+
+- **Readability at the callsite over DRY.** Don't extract helpers just to remove repetition — only extract when it makes the calling code clearer. Short methods that each do one obvious thing are fine as-is.
+- **Explicit over implicit.** Use `_ =` for discarded return values, concrete types over `Any`, and `switch` over arithmetic tricks when branching on cases.
+- **No theoretical edge cases.** Only add guards or bounds checks for scenarios that can realistically occur.
+- **Don't swap one workaround for another.** If a hack is unavoidable and already well-commented, leave it rather than replacing it with something equally opaque.
+- **All classes, methods, and properties should have documentation comments** (Swift `///` style).
+- **Comments explain why, not what.**
+
 ## Known non-issues
 
 - `"Unable to obtain a task name port right for pid …"` logged on quit — this is a kernel-level noise message, not a bug.
