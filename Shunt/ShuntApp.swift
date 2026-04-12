@@ -6,11 +6,15 @@ import SwiftUI
 @main
 struct ShuntApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var openAtLogin = SMAppService.mainApp.status == .enabled
     @State private var accessibilityGranted = AXIsProcessTrusted()
 
     var body: some Scene {
         MenuBarExtra("Shunt", systemImage: "dock.arrow.down.rectangle") {
+            Button("About Shunt") {
+                NSWorkspace.shared.open(URL(string: "https://github.com/notahat/Shunt")!)
+            }
+            Divider()
             // Only shown when accessibility permission hasn't been granted.
             if !accessibilityGranted {
                 Button("Enable Accessibility Access…") {
@@ -18,8 +22,8 @@ struct ShuntApp: App {
                 }
                 Divider()
             }
-            Toggle("Launch at Login", isOn: $launchAtLogin)
-                .onChange(of: launchAtLogin) { _, enabled in
+            Toggle("Open at Login", isOn: $openAtLogin)
+                .onChange(of: openAtLogin) { _, enabled in
                     do {
                         if enabled {
                             try SMAppService.mainApp.register()
@@ -28,7 +32,7 @@ struct ShuntApp: App {
                         }
                     } catch {
                         print("Failed to update launch at login: \(error)")
-                        launchAtLogin = !enabled
+                        openAtLogin = !enabled
                     }
                 }
             Divider()

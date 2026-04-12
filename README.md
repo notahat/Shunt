@@ -13,7 +13,7 @@ MacOS Tahoe or later.
 1. Download `Shunt.zip` from the [latest release](https://github.com/notahat/Shunt/releases/latest)
 2. Unzip and move `Shunt.app` to your Applications folder
 3. Open Shunt — MacOS will ask for Accessibility permission, which it needs to intercept Cmd+Tab
-4. Enable "Launch at Login" from the menu bar icon so it starts automatically
+4. Enable "Open at Login" from the menu bar icon so it starts automatically
 
 ## Privacy
 
