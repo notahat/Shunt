@@ -2,7 +2,7 @@
 
 Replaces the Cmd+Tab app switcher with the Dock. Press Cmd+Tab and the Dock gets keyboard focus — navigate with arrow keys, launch with Return, or press Escape to dismiss. Cmd+Shift+Tab cycles backward.
 
-Runs quietly in the background with no Dock icon. A menu bar icon lets you enable Launch at Login and quit.
+Runs quietly in the background with no Dock icon. A menu bar icon lets you enable Open at Login and quit.
 
 ## Requirements
 
@@ -10,14 +10,22 @@ MacOS Tahoe or later.
 
 ## Installation
 
+**Option 1: Homebrew**
+
+```
+brew install notahat/tap/shunt
+```
+
+**Option 2: Direct download**
+
 1. Download `Shunt.zip` from the [latest release](https://github.com/notahat/Shunt/releases/latest)
 2. Unzip and move `Shunt.app` to your Applications folder
-3. Open Shunt — MacOS will ask for Accessibility permission, which it needs to intercept Cmd+Tab
-4. Enable "Open at Login" from the menu bar icon so it starts automatically
+
+Then open Shunt — MacOS will ask for Accessibility permission, which it needs to intercept Cmd+Tab. Enable "Open at Login" from the menu bar icon so it starts automatically.
 
 ## Privacy
 
-Shunt requires Accessibility access to intercept Cmd+Tab system-wide and to move keyboard focus to the Dock. MacOS requires Accessibility permission for both — there's no narrower entitlement available.
+Shunt requires Accessibility access to intercept Cmd+Tab system-wide and to move keyboard focus to the Dock. MacOS requires Accessibility permission for both.
 
 Shunt does not read the content of other windows, record keystrokes, or transmit any data anywhere. It only acts on Cmd+Tab and Cmd+Shift+Tab, and only to move focus to the Dock.
 
@@ -41,4 +49,4 @@ Run `swiftformat Shunt/` to format code (Swift 6 rules, configured in `.swiftfor
 
 ### Releasing
 
-Run `./release.sh <version>` (e.g. `./release.sh 1.2.0`). The script archives and signs the app with your Developer ID certificate, notarizes it with Apple, staples the notarization ticket, and publishes a GitHub release. See the comments at the top of the script for one-time setup prerequisites.
+Run `./release.sh <version>` (e.g. `./release.sh 1.2.0`). The script archives and signs the app with your Developer ID certificate, notarizes it with Apple, staples the notarization ticket, publishes a GitHub release, and updates the Homebrew tap. See the comments at the top of the script for one-time setup prerequisites.
