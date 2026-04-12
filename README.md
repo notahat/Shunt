@@ -37,4 +37,4 @@ Run `./release.sh <version>` (e.g. `./release.sh 1.2.0`). The script archives an
 
 ## To-dos
 
-- [ ] Tap health monitoring — detect when the system disables the event tap (`tapDisabledByTimeout` / `tapDisabledByUserInput`) and re-enable it automatically
+- [x] Tap health monitoring — detect when the system disables the event tap (`tapDisabledByTimeout` / `tapDisabledByUserInput`) and re-enable it automatically

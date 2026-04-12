@@ -11,6 +11,9 @@ final class EventTapManager {
     private var runLoopSource: CFRunLoopSource?
     private var observers: [Any] = []
 
+    // Held in a static so the non-capturing callback closure can re-enable the tap.
+    private static nonisolated(unsafe) var tapForCallback: CFMachPort?
+
     /// Registers for accessibility notifications and sets up the event tap
     /// immediately if accessibility access is already granted.
     func start(accessibilityGranted: Bool) {
@@ -38,54 +41,68 @@ final class EventTapManager {
         guard eventTap == nil else { return }
 
         let eventMask = CGEventMask(1 << CGEventType.keyDown.rawValue)
-        let tap = CGEvent.tapCreate(
+        let newTap = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
             place: .headInsertEventTap,
             options: .defaultTap,
             eventsOfInterest: eventMask,
-            callback: { _, type, event, _ in
-                guard type == .keyDown,
-                      let direction = EventTapManager.cycleDirection(for: event)
-                else {
-                    return Unmanaged.passUnretained(event)
-                }
-                MainActor.assumeIsolated {
-                    DockNavigator.navigate(direction: direction)
-                }
-                return nil
-            },
+            callback: { _, type, event, _ in EventTapManager.handleEvent(type, event) },
             userInfo: nil
         )
 
-        guard let tap else {
+        guard let newTap else {
             print("Failed to create event tap.")
             return
         }
 
-        eventTap = tap
-        runLoopSource = CFMachPortCreateRunLoopSource(nil, tap, 0)
+        eventTap = newTap
+        EventTapManager.tapForCallback = newTap
+        runLoopSource = CFMachPortCreateRunLoopSource(nil, newTap, 0)
         CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
-        CGEvent.tapEnable(tap: tap, enable: true)
+        CGEvent.tapEnable(tap: newTap, enable: true)
     }
 
     /// Disables and removes the CGEvent tap from the run loop.
     private func tearDownEventTap() {
         if let tap = eventTap {
             CGEvent.tapEnable(tap: tap, enable: false)
+            eventTap = nil
+            EventTapManager.tapForCallback = nil
         }
         if let source = runLoopSource {
             CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
+            runLoopSource = nil
         }
-        eventTap = nil
-        runLoopSource = nil
     }
+
+    private static func handleEvent(_ type: CGEventType, _ event: CGEvent) -> Unmanaged<CGEvent>? {
+        switch type {
+        case .keyDown:
+            guard let direction = cycleDirection(for: event) else {
+                return Unmanaged.passUnretained(event)
+            }
+            MainActor.assumeIsolated {
+                DockNavigator.navigate(direction: direction)
+            }
+            return nil
+        case .tapDisabledByTimeout, .tapDisabledByUserInput:
+            if let tap = tapForCallback {
+                CGEvent.tapEnable(tap: tap, enable: true)
+            }
+            return nil
+        default:
+            return Unmanaged.passUnretained(event)
+        }
+    }
+
+    private static let tabKeyCode: Int64 = 48
 
     /// Returns the Dock cycling direction if the event is Cmd+Tab or Cmd+Shift+Tab,
     /// or nil if the event should be passed through unchanged.
     private static func cycleDirection(for event: CGEvent) -> DockNavigator.Direction? {
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
         let flags = event.flags
-        guard keyCode == 48,
+        guard keyCode == tabKeyCode,
               flags.contains(.maskCommand),
               !flags.contains(.maskAlternate),
               !flags.contains(.maskControl)
