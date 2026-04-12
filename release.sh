@@ -65,6 +65,10 @@ echo "==> Re-zipping with stapled app"
 rm "$ZIP_PATH"
 ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
 
+echo "==> Tagging v$VERSION"
+git tag "v$VERSION"
+git push origin "v$VERSION"
+
 echo "==> Creating GitHub release v$VERSION"
 gh release create "v$VERSION" "$ZIP_PATH" \
     --title "v$VERSION" \
