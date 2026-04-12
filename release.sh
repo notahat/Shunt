@@ -74,4 +74,14 @@ gh release create "v$VERSION" "$ZIP_PATH" \
     --title "v$VERSION" \
     --generate-notes
 
+echo "==> Updating Homebrew tap"
+SHA256=$(shasum -a 256 "$ZIP_PATH" | awk '{print $1}')
+TAP_DIR=$(mktemp -d)
+git clone git@github.com:notahat/homebrew-tap.git "$TAP_DIR"
+sed -i '' "s/version \".*\"/version \"$VERSION\"/" "$TAP_DIR/Casks/shunt.rb"
+sed -i '' "s/sha256 \".*\"/sha256 \"$SHA256\"/" "$TAP_DIR/Casks/shunt.rb"
+git -C "$TAP_DIR" commit -am "Update Shunt to v$VERSION"
+git -C "$TAP_DIR" push
+rm -rf "$TAP_DIR"
+
 echo "==> Done! https://github.com/notahat/Shunt/releases/tag/v$VERSION"
