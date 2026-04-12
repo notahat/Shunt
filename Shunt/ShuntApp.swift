@@ -52,14 +52,14 @@ struct ShuntApp: App {
     }
 }
 
-/// Starts the accessibility monitor and event tap on launch.
+/// Starts the accessibility monitor and Cmd+Tab interceptor on launch.
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     let accessibilityMonitor = AccessibilityMonitor()
-    let eventTapManager = EventTapManager()
+    let cmdTabInterceptor = CmdTabInterceptor()
 
     func applicationDidFinishLaunching(_: Notification) {
         accessibilityMonitor.start()
-        eventTapManager.start(accessibilityGranted: accessibilityMonitor.isTrusted)
+        cmdTabInterceptor.start(accessibilityGranted: accessibilityMonitor.isTrusted)
     }
 }

@@ -1,18 +1,17 @@
 import ApplicationServices
 import CoreGraphics
 
-/// Sets up a CGEvent tap to intercept Cmd+Tab and Cmd+Shift+Tab system-wide. When
-/// detected, the event is swallowed and DockActivator is called instead. Enables
-/// and disables the tap in response to accessibility permission changes via
-/// AccessibilityMonitor.
+/// Intercepts Cmd+Tab and Cmd+Shift+Tab system-wide and triggers Dock navigation
+/// instead. Enables and disables the underlying CGEvent tap in response to
+/// accessibility permission changes via AccessibilityMonitor.
 @MainActor
-final class EventTapManager {
+final class CmdTabInterceptor {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var observers: [Any] = []
 
-    // Held in a static so the non-capturing callback closure can re-enable the tap.
-    private static nonisolated(unsafe) var tapForCallback: CFMachPort?
+    /// Held in a static so the non-capturing callback closure can re-enable the tap.
+    private nonisolated(unsafe) static var tapForCallback: CFMachPort?
 
     /// Registers for accessibility notifications and sets up the event tap
     /// immediately if accessibility access is already granted.
@@ -46,7 +45,7 @@ final class EventTapManager {
             place: .headInsertEventTap,
             options: .defaultTap,
             eventsOfInterest: eventMask,
-            callback: { _, type, event, _ in EventTapManager.handleEvent(type, event) },
+            callback: { _, type, event, _ in CmdTabInterceptor.handleEvent(type, event) },
             userInfo: nil
         )
 
@@ -56,7 +55,7 @@ final class EventTapManager {
         }
 
         eventTap = newTap
-        EventTapManager.tapForCallback = newTap
+        CmdTabInterceptor.tapForCallback = newTap
         runLoopSource = CFMachPortCreateRunLoopSource(nil, newTap, 0)
         CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
         CGEvent.tapEnable(tap: newTap, enable: true)
@@ -67,7 +66,7 @@ final class EventTapManager {
         if let tap = eventTap {
             CGEvent.tapEnable(tap: tap, enable: false)
             eventTap = nil
-            EventTapManager.tapForCallback = nil
+            CmdTabInterceptor.tapForCallback = nil
         }
         if let source = runLoopSource {
             CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
