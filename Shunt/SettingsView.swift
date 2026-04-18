@@ -44,5 +44,8 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView()
+    let store = UserDefaults(suiteName: "preview")!
+    store.set(SwitcherMode.raycast.rawValue, forKey: "switcherMode")
+    return SettingsView()
+        .defaultAppStorage(store)
 }
