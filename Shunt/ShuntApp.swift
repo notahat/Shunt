@@ -26,6 +26,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let accessibilityMonitor = AccessibilityMonitor()
     let cmdTabInterceptor = CmdTabInterceptor()
 
+    /// Prevents the app from quitting when the settings window is closed.
+    /// Without this, adding the Window scene causes macOS to quit the app
+    /// when it thinks the last window has closed.
+    func applicationShouldTerminateAfterLastWindowClosed(_: NSApplication) -> Bool {
+        false
+    }
+
     /// Starts the accessibility monitor and event tap on launch, and restores
     /// the saved switcher mode. Skipped when running inside an Xcode preview.
     func applicationDidFinishLaunching(_: Notification) {
