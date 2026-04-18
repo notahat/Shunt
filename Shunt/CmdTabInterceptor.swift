@@ -14,8 +14,9 @@ final class CmdTabInterceptor {
     /// Held in statics so the non-capturing callback closure can access them.
     private nonisolated(unsafe) static var tapForCallback: CFMachPort?
 
-    /// When true, Cmd+Tab opens the Raycast window switcher instead of the Dock.
-    nonisolated(unsafe) static var useRaycastSwitcher: Bool = false
+    /// The active switching strategy. Written from the main actor; read from the
+    /// CGEvent tap callback via MainActor.assumeIsolated.
+    nonisolated(unsafe) static var switcherMode: SwitcherMode = .dock
 
     /// Registers for accessibility notifications and sets up the event tap
     /// immediately if accessibility access is already granted.
@@ -86,10 +87,9 @@ final class CmdTabInterceptor {
                 return Unmanaged.passUnretained(event)
             }
             MainActor.assumeIsolated {
-                if useRaycastSwitcher {
-                    RaycastNavigator.activate()
-                } else {
-                    DockNavigator.navigate(direction: direction)
+                switch switcherMode {
+                case .dock: DockNavigator.navigate(direction: direction)
+                case .raycast: RaycastNavigator.activate()
                 }
             }
             return nil

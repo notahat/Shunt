@@ -1,8 +1,10 @@
 # Shunt
 
-Replaces the Cmd+Tab app switcher with the Dock. Press Cmd+Tab and the Dock gets keyboard focus — navigate with arrow keys, launch with Return, or press Escape to dismiss. Cmd+Shift+Tab cycles backward.
+Replaces the ⌘-tab app switcher. You can select from having ⌘-tab:
+- Give the dock keyboard focus. Use ⌘-tab and ⌘⇧-tab to navigate, return to launch, escape to dismiss.
+- Open the Raycast window switcher.
 
-Runs quietly in the background with no Dock icon. A menu bar icon lets you enable Open at Login and quit.
+Runs quietly in the background with no Dock icon. A menu bar icon gives access to settings and lets you quit.
 
 ## Requirements
 
@@ -21,15 +23,15 @@ brew install notahat/tap/shunt
 1. Download `Shunt.zip` from the [latest release](https://github.com/notahat/Shunt/releases/latest)
 2. Unzip and move `Shunt.app` to your Applications folder
 
-Then open Shunt — MacOS will ask for Accessibility permission, which it needs to intercept Cmd+Tab. Enable "Open at Login" from the menu bar icon so it starts automatically.
+Then open Shunt — MacOS will ask for Accessibility permission, which it needs to intercept Cmd+Tab. Open Settings from the menu bar icon to enable "Open at Login" and choose your preferred window switcher.
 
 ## Privacy
 
 Shunt requires Accessibility access to intercept Cmd+Tab system-wide and to move keyboard focus to the Dock. MacOS requires Accessibility permission for both.
 
-Shunt does not read the content of other windows, record keystrokes, or transmit any data anywhere. It only acts on Cmd+Tab and Cmd+Shift+Tab, and only to move focus to the Dock.
+Shunt does not read the content of other windows, record keystrokes, or transmit any data anywhere. It only acts on Cmd+Tab and Cmd+Shift+Tab, and only to move focus to the Dock or open Raycast.
 
-If you'd prefer not to take that on trust, the full source is here. The key files are `Shunt/CmdTabInterceptor.swift` (keyboard interception) and `Shunt/DockNavigator.swift` (Dock interaction).
+If you'd prefer not to take that on trust, the full source is here. The key files are `Shunt/CmdTabInterceptor.swift` (keyboard interception), `Shunt/DockNavigator.swift` (Dock interaction), and `Shunt/RaycastNavigator.swift` (Raycast integration).
 
 ---
 
