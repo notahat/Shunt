@@ -1,17 +1,21 @@
 import ApplicationServices
 import CoreGraphics
 
-/// Intercepts Cmd+Tab and Cmd+Shift+Tab system-wide and triggers Dock navigation
-/// instead. Enables and disables the underlying CGEvent tap in response to
-/// accessibility permission changes via AccessibilityMonitor.
+/// Intercepts Cmd+Tab and Cmd+Shift+Tab system-wide and triggers either Dock
+/// navigation or the Raycast window switcher, depending on the active mode.
+/// Enables and disables the underlying CGEvent tap in response to accessibility
+/// permission changes via AccessibilityMonitor.
 @MainActor
 final class CmdTabInterceptor {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var observers: [NSObjectProtocol] = []
 
-    /// Held in a static so the non-capturing callback closure can re-enable the tap.
+    /// Held in statics so the non-capturing callback closure can access them.
     private nonisolated(unsafe) static var tapForCallback: CFMachPort?
+
+    /// When true, Cmd+Tab opens the Raycast window switcher instead of the Dock.
+    nonisolated(unsafe) static var useRaycastSwitcher: Bool = false
 
     /// Registers for accessibility notifications and sets up the event tap
     /// immediately if accessibility access is already granted.
@@ -82,7 +86,11 @@ final class CmdTabInterceptor {
                 return Unmanaged.passUnretained(event)
             }
             MainActor.assumeIsolated {
-                DockNavigator.navigate(direction: direction)
+                if useRaycastSwitcher {
+                    RaycastNavigator.activate()
+                } else {
+                    DockNavigator.navigate(direction: direction)
+                }
             }
             return nil
         case .tapDisabledByTimeout, .tapDisabledByUserInput:

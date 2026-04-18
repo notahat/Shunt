@@ -8,6 +8,7 @@ struct ShuntApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State private var openAtLogin = SMAppService.mainApp.status == .enabled
     @State private var accessibilityGranted = AXIsProcessTrusted()
+    @State private var useRaycastSwitcher = UserDefaults.standard.bool(forKey: "useRaycastSwitcher")
 
     var body: some Scene {
         MenuBarExtra("Shunt", systemImage: "dock.arrow.down.rectangle") {
@@ -22,6 +23,11 @@ struct ShuntApp: App {
                 }
                 Divider()
             }
+            Toggle("Use Raycast Window Switcher", isOn: $useRaycastSwitcher)
+                .onChange(of: useRaycastSwitcher) { _, enabled in
+                    UserDefaults.standard.set(enabled, forKey: "useRaycastSwitcher")
+                    CmdTabInterceptor.useRaycastSwitcher = enabled
+                }
             Toggle("Open at Login", isOn: $openAtLogin)
                 .onChange(of: openAtLogin) { _, enabled in
                     do {
@@ -66,5 +72,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_: Notification) {
         accessibilityMonitor.start()
         cmdTabInterceptor.start(accessibilityGranted: accessibilityMonitor.isTrusted)
+        CmdTabInterceptor.useRaycastSwitcher = UserDefaults.standard.bool(forKey: "useRaycastSwitcher")
     }
 }
