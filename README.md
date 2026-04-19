@@ -39,7 +39,9 @@ If you'd prefer not to take that on trust, the full source is here. The key file
 
 ### How it works
 
-Shunt installs a system-wide CGEvent tap to intercept Cmd+Tab and Cmd+Shift+Tab before they reach the OS. When detected, it uses the MacOS accessibility API to set keyboard focus on the Dock — the same effect as pressing Control+F3 ("Move Focus to the Dock"). Because CGEvent taps and cross-process accessibility access both require it, App Sandbox is disabled.
+Shunt installs a system-wide CGEvent tap to intercept Cmd+Tab and Cmd+Shift+Tab before they reach the OS. Depending on your settings, it either uses the macOS accessibility API to move keyboard focus to the Dock, or opens Raycast via its deep link URL. Because CGEvent taps and cross-process accessibility access both require it, App Sandbox is disabled.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for a component dependency diagram.
 
 ### Building
 
