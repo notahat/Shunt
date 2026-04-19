@@ -1,6 +1,7 @@
 # Architecture
 
-## Dependencies
+Read each arrow as a sentence: "A [label] B". Solid arrows are direct code
+dependencies; the dashed arrow is an indirect `NotificationCenter` relationship.
 
 ```mermaid
 graph TD

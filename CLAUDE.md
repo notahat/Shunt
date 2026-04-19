@@ -37,6 +37,14 @@ Use SwiftFormat: `swiftformat Shunt/`
 - **All classes, methods, and properties should have documentation comments** (Swift `///` style).
 - **Comments explain why, not what.**
 
+## Architecture diagram
+
+`ARCHITECTURE.md` contains a Mermaid dependency diagram. Keep it up to date
+when making code changes. Each node shows the component name (in `<b>` tags)
+and a one-line description of its responsibility. Each arrow label forms a
+readable sentence with its endpoints: "A [label] B". Solid arrows are direct
+code dependencies; dashed arrows are indirect `NotificationCenter` relationships.
+
 ## Known non-issues
 
 - `"Unable to obtain a task name port right for pid …"` logged on quit — this is a kernel-level noise message, not a bug.
