@@ -6,8 +6,7 @@ struct ShuntApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     /// False when running inside an Xcode preview, so the menu bar icon doesn't appear.
-    @State private var showMenuBarExtra =
-        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1"
+    @State private var showMenuBarExtra = !ProcessInfo.processInfo.isRunningInXcodePreview
 
     var body: some Scene {
         MenuBarExtra("Shunt", systemImage: "dock.arrow.down.rectangle", isInserted: $showMenuBarExtra) {
@@ -36,7 +35,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// Starts the accessibility monitor and event tap on launch.
     /// Skipped when running inside an Xcode preview.
     func applicationDidFinishLaunching(_: Notification) {
-        guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+        guard !ProcessInfo.processInfo.isRunningInXcodePreview else { return }
         accessibilityMonitor.start()
         cmdTabInterceptor.start(accessibilityGranted: accessibilityMonitor.isTrusted) { direction in
             switch self.switcherMode() {
@@ -50,5 +49,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func switcherMode() -> SwitcherMode {
         UserDefaults.standard.string(forKey: SwitcherMode.defaultsKey)
             .flatMap(SwitcherMode.init(rawValue:)) ?? .dock
+    }
+}
+
+private extension ProcessInfo {
+    /// True when running inside an Xcode preview.
+    var isRunningInXcodePreview: Bool {
+        environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
     }
 }
