@@ -52,3 +52,9 @@ Run `swiftformat Shunt/` to format code (Swift 6 rules, configured in `.swiftfor
 ### Releasing
 
 Run `./release.sh <version>` (e.g. `./release.sh 1.2.0`). The script archives and signs the app with your Developer ID certificate, notarizes it with Apple, staples the notarization ticket, publishes a GitHub release, and updates the Homebrew tap. See the comments at the top of the script for one-time setup prerequisites.
+
+To upgrade to the new version via Homebrew:
+
+```
+brew update && brew upgrade shunt
+```
