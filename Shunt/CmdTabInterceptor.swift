@@ -1,12 +1,14 @@
-import ApplicationServices
 import CoreGraphics
+import Foundation
 
-/// Intercepts Cmd+Tab and Cmd+Shift+Tab system-wide and triggers either Dock
-/// navigation or the Raycast window switcher, depending on the active mode.
-/// Enables and disables the underlying CGEvent tap in response to accessibility
-/// permission changes via AccessibilityMonitor.
+/// Intercepts Cmd+Tab and Cmd+Shift+Tab system-wide and calls a handler closure
+/// when either is pressed. Enables and disables the underlying CGEvent tap in
+/// response to accessibility permission changes via AccessibilityMonitor.
 @MainActor
 final class CmdTabInterceptor {
+    /// The direction of a Cmd+Tab or Cmd+Shift+Tab press.
+    enum Direction { case forward, backward }
+
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var observers: [NSObjectProtocol] = []
@@ -14,13 +16,15 @@ final class CmdTabInterceptor {
     /// Held in statics so the non-capturing callback closure can access them.
     private nonisolated(unsafe) static var tapForCallback: CFMachPort?
 
-    /// The active switching strategy. Written from the main actor; read from the
-    /// CGEvent tap callback via MainActor.assumeIsolated.
-    nonisolated(unsafe) static var switcherMode: SwitcherMode = .dock
+    /// Called when Cmd+Tab or Cmd+Shift+Tab is intercepted. Stored as a static
+    /// so the non-capturing CGEvent tap callback can reach it.
+    private nonisolated(unsafe) static var onCmdTabForCallback: ((Direction) -> Void)?
 
     /// Registers for accessibility notifications and sets up the event tap
     /// immediately if accessibility access is already granted.
-    func start(accessibilityGranted: Bool) {
+    func start(accessibilityGranted: Bool, onCmdTab: @escaping (Direction) -> Void) {
+        CmdTabInterceptor.onCmdTabForCallback = onCmdTab
+
         observers.append(NotificationCenter.default.addObserver(
             forName: .accessibilityGranted, object: nil, queue: .main
         ) { [weak self] _ in
@@ -86,12 +90,7 @@ final class CmdTabInterceptor {
             guard let direction = cycleDirection(for: event) else {
                 return Unmanaged.passUnretained(event)
             }
-            MainActor.assumeIsolated {
-                switch switcherMode {
-                case .dock: DockNavigator.navigate(direction: direction)
-                case .raycast: RaycastNavigator.activate()
-                }
-            }
+            MainActor.assumeIsolated { onCmdTabForCallback?(direction) }
             return nil
         case .tapDisabledByTimeout, .tapDisabledByUserInput:
             if let tap = tapForCallback {
@@ -105,9 +104,9 @@ final class CmdTabInterceptor {
 
     private static let tabKeyCode: Int64 = 48
 
-    /// Returns the Dock cycling direction if the event is Cmd+Tab or Cmd+Shift+Tab,
+    /// Returns the cycling direction if the event is Cmd+Tab or Cmd+Shift+Tab,
     /// or nil if the event should be passed through unchanged.
-    private static func cycleDirection(for event: CGEvent) -> DockNavigator.Direction? {
+    private static func cycleDirection(for event: CGEvent) -> Direction? {
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
         let flags = event.flags
         guard keyCode == tabKeyCode,

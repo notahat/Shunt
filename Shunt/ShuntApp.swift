@@ -38,9 +38,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_: Notification) {
         guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
         accessibilityMonitor.start()
-        cmdTabInterceptor.start(accessibilityGranted: accessibilityMonitor.isTrusted)
-        let savedMode = UserDefaults.standard.string(forKey: "switcherMode")
+        cmdTabInterceptor.start(accessibilityGranted: accessibilityMonitor.isTrusted) { direction in
+            switch self.savedSwitcherMode() {
+            case .dock:
+                switch direction {
+                case .forward: DockNavigator.navigate(direction: .forward)
+                case .backward: DockNavigator.navigate(direction: .backward)
+                }
+            case .raycast:
+                RaycastNavigator.activate()
+            }
+        }
+    }
+
+    /// Reads the switcher mode from user defaults, defaulting to .dock.
+    private func savedSwitcherMode() -> SwitcherMode {
+        UserDefaults.standard.string(forKey: "switcherMode")
             .flatMap(SwitcherMode.init(rawValue:)) ?? .dock
-        CmdTabInterceptor.switcherMode = savedMode
     }
 }

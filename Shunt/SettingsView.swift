@@ -37,9 +37,6 @@ struct SettingsView: View {
         .onAppear {
             openAtLogin = SMAppService.mainApp.status == .enabled
         }
-        .onChange(of: switcherMode) { _, mode in
-            CmdTabInterceptor.switcherMode = mode
-        }
     }
 }
 
