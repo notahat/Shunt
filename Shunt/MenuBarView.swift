@@ -3,7 +3,7 @@ import SwiftUI
 
 /// The menu bar menu content.
 struct MenuBarView: View {
-    @State private var accessibilityGranted = AXIsProcessTrusted()
+    @State private var accessibilityGranted = false
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
@@ -23,16 +23,13 @@ struct MenuBarView: View {
             NSApp.activate(ignoringOtherApps: true)
         }
         Divider()
-        // onReceive must be attached to a view that's always in the menu,
-        // regardless of whether the accessibility warning is showing.
         Button("Quit Shunt") {
             NSApplication.shared.terminate(nil)
         }
-        .onReceive(NotificationCenter.default.publisher(for: .accessibilityGranted)) { _ in
-            accessibilityGranted = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .accessibilityRevoked)) { _ in
-            accessibilityGranted = false
+        .onAppear {
+            // Checked on each menu open since accessibility can be granted or
+            // revoked while Shunt is running but the menu is closed.
+            accessibilityGranted = AXIsProcessTrusted()
         }
     }
 }
