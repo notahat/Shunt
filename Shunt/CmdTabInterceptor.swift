@@ -6,9 +6,6 @@ import Foundation
 /// response to accessibility permission changes via AccessibilityMonitor.
 @MainActor
 final class CmdTabInterceptor {
-    /// The direction of a Cmd+Tab or Cmd+Shift+Tab press.
-    enum Direction { case forward, backward }
-
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var observers: [NSObjectProtocol] = []
@@ -18,11 +15,11 @@ final class CmdTabInterceptor {
 
     /// Called when Cmd+Tab or Cmd+Shift+Tab is intercepted. Stored as a static
     /// so the non-capturing CGEvent tap callback can reach it.
-    private nonisolated(unsafe) static var onCmdTabForCallback: ((Direction) -> Void)?
+    private nonisolated(unsafe) static var onCmdTabForCallback: ((TabDirection) -> Void)?
 
     /// Registers for accessibility notifications and sets up the event tap
     /// immediately if accessibility access is already granted.
-    func start(accessibilityGranted: Bool, onCmdTab: @escaping (Direction) -> Void) {
+    func start(accessibilityGranted: Bool, onCmdTab: @escaping (TabDirection) -> Void) {
         CmdTabInterceptor.onCmdTabForCallback = onCmdTab
 
         observers.append(NotificationCenter.default.addObserver(
@@ -87,7 +84,7 @@ final class CmdTabInterceptor {
     private static func handleEvent(_ type: CGEventType, _ event: CGEvent) -> Unmanaged<CGEvent>? {
         switch type {
         case .keyDown:
-            guard let direction = cycleDirection(for: event) else {
+            guard let direction = cycleTabDirection(for: event) else {
                 return Unmanaged.passUnretained(event)
             }
             MainActor.assumeIsolated { onCmdTabForCallback?(direction) }
@@ -106,7 +103,7 @@ final class CmdTabInterceptor {
 
     /// Returns the cycling direction if the event is Cmd+Tab or Cmd+Shift+Tab,
     /// or nil if the event should be passed through unchanged.
-    private static func cycleDirection(for event: CGEvent) -> Direction? {
+    private static func cycleTabDirection(for event: CGEvent) -> TabDirection? {
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
         let flags = event.flags
         guard keyCode == tabKeyCode,

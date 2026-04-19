@@ -3,7 +3,7 @@ import SwiftUI
 
 /// Settings window content. Owns the switcher mode and open-at-login preferences.
 struct SettingsView: View {
-    @AppStorage("switcherMode") private var switcherMode: SwitcherMode = .dock
+    @AppStorage(SwitcherMode.defaultsKey) private var switcherMode: SwitcherMode = .dock
     @State private var openAtLogin = false
 
     var body: some View {

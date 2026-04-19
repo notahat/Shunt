@@ -7,7 +7,6 @@ import AppKit
 /// searching for "Switch Windows", then pressing Shift+Cmd+C.
 @MainActor
 enum RaycastNavigator {
-    // swiftlint:disable:next force_unwrapping
     private static let switchWindowsURL = URL(string: "raycast://extensions/raycast/navigation/switch-windows")!
 
     /// Opens the Raycast window switcher. Has no effect if Raycast is not installed.

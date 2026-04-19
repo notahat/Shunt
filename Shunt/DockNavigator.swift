@@ -4,12 +4,10 @@ import ApplicationServices
 /// Navigates the Dock via the accessibility API.
 @MainActor
 enum DockNavigator {
-    enum Direction { case forward, backward }
-
     /// Moves the Dock selection one step in the given direction. On first call,
     /// enters keyboard navigation mode and selects the item adjacent to the
     /// frontmost app. On subsequent calls, advances through items, skipping separators.
-    static func navigate(direction: Direction = .forward) {
+    static func navigate(direction: TabDirection = .forward) {
         guard let list = findDockList(),
               let listChildren = children(of: list)
         else { return }
@@ -68,7 +66,7 @@ enum DockNavigator {
     }
 
     /// Returns the next item after the current one in the given direction, skipping separators.
-    private static func nextSelectableItem(after current: AXUIElement, in children: [AXUIElement], direction: Direction) -> AXUIElement? {
+    private static func nextSelectableItem(after current: AXUIElement, in children: [AXUIElement], direction: TabDirection) -> AXUIElement? {
         guard let currentIndex = children.firstIndex(where: { CFEqual($0, current) }) else { return nil }
         let count = children.count
         var nextIndex = currentIndex

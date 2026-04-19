@@ -33,27 +33,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         false
     }
 
-    /// Starts the accessibility monitor and event tap on launch, and restores
-    /// the saved switcher mode. Skipped when running inside an Xcode preview.
+    /// Starts the accessibility monitor and event tap on launch.
+    /// Skipped when running inside an Xcode preview.
     func applicationDidFinishLaunching(_: Notification) {
         guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
         accessibilityMonitor.start()
         cmdTabInterceptor.start(accessibilityGranted: accessibilityMonitor.isTrusted) { direction in
-            switch self.savedSwitcherMode() {
-            case .dock:
-                switch direction {
-                case .forward: DockNavigator.navigate(direction: .forward)
-                case .backward: DockNavigator.navigate(direction: .backward)
-                }
-            case .raycast:
-                RaycastNavigator.activate()
+            switch self.switcherMode() {
+            case .dock: DockNavigator.navigate(direction: direction)
+            case .raycast: RaycastNavigator.activate()
             }
         }
     }
 
-    /// Reads the switcher mode from user defaults, defaulting to .dock.
-    private func savedSwitcherMode() -> SwitcherMode {
-        UserDefaults.standard.string(forKey: "switcherMode")
+    /// Reads the current switcher mode from user defaults, defaulting to .dock.
+    private func switcherMode() -> SwitcherMode {
+        UserDefaults.standard.string(forKey: SwitcherMode.defaultsKey)
             .flatMap(SwitcherMode.init(rawValue:)) ?? .dock
     }
 }
