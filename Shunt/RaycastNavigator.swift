@@ -10,19 +10,22 @@ import AppKit
 /// searching for "Switch Windows", then pressing Shift+Cmd+C.
 @MainActor
 enum RaycastNavigator {
-    private static let stableBundleID = "com.raycast.macos"
     private static let betaBundleID = "com.raycast-x.macos"
 
     private static let stableSwitchWindowsURL = URL(string: "raycast://extensions/raycast/navigation/switch-windows")!
     private static let betaSwitchWindowsURL = URL(string: "raycast-x://extensions/raycast/navigation/switch-windows")!
 
-    /// Opens the Raycast window switcher. Has no effect if neither Raycast
-    /// nor Raycast Beta is installed.
+    /// Opens the Raycast window switcher. Has no effect if Raycast is not installed.
+    ///
+    /// We only probe for Raycast Beta's bundle ID and fall through to the stable
+    /// URL otherwise. Probing for the stable bundle ID too added latency to the
+    /// CGEvent tap callback and could occasionally return nil even when Raycast
+    /// was installed, leaving the user with no switcher at all.
     static func activate() {
         let workspace = NSWorkspace.shared
         if workspace.urlForApplication(withBundleIdentifier: betaBundleID) != nil {
             workspace.open(betaSwitchWindowsURL)
-        } else if workspace.urlForApplication(withBundleIdentifier: stableBundleID) != nil {
+        } else {
             workspace.open(stableSwitchWindowsURL)
         }
     }
