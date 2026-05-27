@@ -36,6 +36,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// Skipped when running inside an Xcode preview.
     func applicationDidFinishLaunching(_: Notification) {
         guard !ProcessInfo.processInfo.isRunningInXcodePreview else { return }
+        RaycastNavigator.prewarm()
         accessibilityMonitor.start()
         cmdTabInterceptor.start(accessibilityGranted: accessibilityMonitor.isTrusted) { direction in
             switch self.switcherMode() {
